@@ -39,7 +39,7 @@ router.post('/', function(req, res, next) {
             res.send({
               msg: '上传成功！',
               code: 0,
-              data: result
+              data: `http://om0wp2jdb.bkt.clouddn.com/${result}`
             })
             fs.unlink(localPath, (err) => {
               if (err) {
