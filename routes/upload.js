@@ -22,35 +22,50 @@ router.post('/', function(req, res, next) {
     if(err) {
       console.log(err)
     } else {
-      var nowTime = new Date()
-      let key = String(nowTime.getTime())
-      let localPath = `upload/${key}.png`
-      fs.renameSync(files.file[0].path, localPath, function(err) {
-        console.log(err)
-      });
-      token = uptoken(bucket, key)
-      const url = uploadFile(token, key, localPath)
-      var extra = new qiniu.io.PutExtra();
-        qiniu.io.putFile(token, key, localPath, extra, function(err, ret) {
-          if(!err) {
-            res.send({
-              msg: 'upload success',
-              code: 0,
-              url: `http://om0wp2jdb.bkt.clouddn.com/${ret.key}`
-            })
-            // console.log(`http://om0wp2jdb.bkt.clouddn.com/${ret.key}`)
-            // console.log(ret.hash, ret.key, ret.persistentId);
-          } else {
-            console.log(err);
-          }
-      });
-      if (url) {
+      if (!files.file) {
         res.send({
-          msg: '上传成功！',
-          code: 0,
-          data: url
+          msg: '上传失败！',
+          code: 1,
+          data: null
         })
+        return
       }
+      const key = files.file[0].originalFilename
+      const localPath = files.file[0].path
+      token = uptoken(bucket, key)
+      responseURL(token, key, localPath)
+        .then((result) => {
+          if (result) {
+            res.send({
+              msg: '上传成功！',
+              code: 0,
+              data: result
+            })
+            fs.unlink(localPath, (err) => {
+              if (err) {
+                cosnole.log(err)
+              }
+            })
+          }
+        }, (result) => {
+          res.send({
+            msg: '上传失败！',
+            code: 0,
+            data: result
+          })
+          fs.unlink(localPath, (err) => {
+            if (err) {
+              cosnole.log(err)
+            }
+          })
+        })
+        .catch((err) => {
+          res.send({
+            msg: err,
+            code: 1,
+            data: null
+          })
+        })
     }
   })
 })
@@ -62,17 +77,20 @@ function uptoken(bucket, key) {
 
 function uploadFile(uptoken, key, localFile) {
   var extra = new qiniu.io.PutExtra();
-    qiniu.io.putFile(uptoken, key, localFile, extra, function(err, ret) {
+  return new Promise((resolve, reject) => {
+    qiniu.io.putFile(uptoken, key, localFile, extra, (err, ret) => {
       if(!err) {
-        const url = `http://om0wp2jdb.bkt.clouddn.com/${ret.key}`
-        console.log('1111')
-        return url
-        // console.log(`http://om0wp2jdb.bkt.clouddn.com/${ret.key}`)
-        // console.log(ret.hash, ret.key, ret.persistentId);
+        resolve(ret.key)
       } else {
-        console.log(err);
+        reject(err)
       }
-  });
+    })
+  })
+}
+
+async function responseURL(uptoken, key, localFile) {
+  let url = await uploadFile(uptoken, key, localFile)
+  return url
 }
 
 module.exports = router;
