@@ -1,11 +1,19 @@
-## node_server for web
+#node_server for web
 
-### npm install
+``` bash
+# npm install
 
-### npm start
+> Installation project dependencies
 
-##content
+# npm start
 
-### interface sample for node.js
+> Start the server runs on port 3000
 
-### database mysql
+# content
+
+interface sample for node.js base on express
+
+database: mysql
+
+```
+---
