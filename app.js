@@ -7,7 +7,7 @@ var bodyParser = require('body-parser');
 
 var index = require('./routes/index');
 var auth = require('./routes/auth');
-var users = require('./routes/users');
+var user = require('./routes/user');
 var web = require('./routes/web');
 var upload = require('./routes/upload');
 
@@ -27,7 +27,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', index);
 app.use('/auth', auth);
-app.use('/users', users);
+app.use('/user', user);
 app.use('/web', web)
 app.use('/upload', upload)
 
